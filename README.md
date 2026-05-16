@@ -61,7 +61,7 @@ graph TB
 
     subgraph Bridge[Redis bridge]
       Q1[work queue]
-      Q2[message:&lt;id&gt; queue]
+      Q2["message:{id} queue"]
       Q3[logs queue]
       Q4[status-updates queue]
       Q5[history-updates pub/sub]
@@ -76,8 +76,8 @@ graph TB
     Storage[(Object storage<br/>local fs OR GCS<br/>session files .tar.gz)]
 
     Browser -- POST /sessions, /messages --> HTTP
-    Browser -- WS /sessions/&lt;id&gt;/ws --> HTTP
-    Browser -- GET /sessions/&lt;id&gt;/download --> HTTP
+    Browser -- "WS /sessions/{id}/ws" --> HTTP
+    Browser -- "GET /sessions/{id}/download" --> HTTP
 
     HTTP -- session metadata --> DB
     HTTP -- enqueue / send message --> Q1
@@ -134,7 +134,7 @@ sequenceDiagram
     W->>R: BRPop work
     W->>R: status → Active
     W->>ST: GetSessionState (resume if any)
-    W->>A: spawn agentfs run claude -p &lt;intent&gt;
+    W->>A: spawn agentfs run claude -p {intent}
 
     loop streaming output
       A-->>W: stream-json line
@@ -143,12 +143,12 @@ sequenceDiagram
 
     S->>R: read logs-queue
     S->>DB: AddMessageToHistory(item)
-    S->>R: Publish history-updates &lt;id&gt;
+    S->>R: Publish history-updates {id}
     R-->>S: deliver on subscriber channel
     S-->>U: WebSocket: full session JSON
 
     A-->>W: exit
-    W->>R: BRPop message:&lt;id&gt; (wait 5m for follow-up)
+    W->>R: BRPop message:{id} (wait 1m for follow-up)
     alt follow-up arrives
       W->>A: re-spawn with new intent
     else timeout
@@ -219,7 +219,7 @@ graph LR
 
     subgraph Redis
       WQ[("work · LIST")]
-      MQ[("message:&lt;id&gt; · LIST")]
+      MQ[("message:{id} · LIST")]
       LQ[("logs-queue · LIST")]
       SQ[("status-updates · LIST")]
       HQ[("history-updates · PUB/SUB")]
@@ -273,46 +273,46 @@ moment every connected browser tab re-renders:
 sequenceDiagram
     autonumber
     participant B as Browser
-    participant S as Server (HTTP / WS / goroutines)
+    participant S as Server
     participant R as Redis
     participant W as Worker
     participant A as agentfs
 
     B->>S: POST /messages { content }
-    S->>R: LPush message:&lt;id&gt;  (session is Active)
+    S->>R: LPush message:{id} (session is Active)
     S-->>B: 201 Created
 
-    Note over W: was BRPop'ing on message:&lt;id&gt;<br/>(1-min timeout)
+    Note over W: parked on BRPop message:{id} with 1m timeout
     R-->>W: message popped
-    W->>A: stdin: follow-up text<br/>(or re-spawn with new intent)
+    W->>A: deliver follow-up (or re-spawn with new intent)
 
     loop streamed output
-      A-->>W: stream-json line<br/>{ type: "assistant", content: [...] }
+      A-->>W: stream-json line (assistant content)
       W->>R: LPush logs-queue { role, content, input? }
     end
 
     Note over S: TrackLogs goroutine
     R-->>S: BRPop logs-queue
     S->>S: db.AddMessageToHistory(item)
-    S->>R: Publish history-updates &lt;id&gt;
+    S->>R: Publish history-updates {id}
 
-    Note over S: SubscribeToHistoryUpdate goroutine
-    R-->>S: deliver on subscriber channel
-    S->>S: sessionsMap[id] <- struct{}{}
+    Note over S: history-updates subscriber
+    R-->>S: deliver event on channel
+    S->>S: signal sessionsMap[id]
 
-    Note over S: WebSocket goroutine per session
-    S->>S: db.GetSession(id) → full Session JSON
-    S-->>B: WS frame { id, intent, status, history, … }
+    Note over S: per-session WebSocket goroutine
+    S->>S: db.GetSession(id) - full Session JSON
+    S-->>B: WS frame { id, intent, status, history, ... }
 
-    Note over B: frontend diffs history.length<br/>against last known and either<br/>renders new messages or shows<br/>the tool-input ticker
+    Note over B: frontend diffs history.length and renders new content
 
     Note over W: agent finishes this turn
-    W->>R: LPush status-updates { id, status: "Awaiting User Input" }
+    W->>R: LPush status-updates { status: Awaiting User Input }
     R-->>S: BRPop status-updates
     S->>S: db.UpdateSessionStatus
-    S->>R: Publish history-updates &lt;id&gt;
-    R-->>S: deliver on subscriber channel
-    S-->>B: WS frame (browser shows "Awaiting input" badge, input bar visible)
+    S->>R: Publish history-updates {id}
+    R-->>S: deliver event on channel
+    S-->>B: WS frame (browser shows Awaiting input badge, input bar visible)
 ```
 
 The single trace touches **four** of the five Redis primitives. The fifth
