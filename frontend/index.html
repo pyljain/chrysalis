@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chrysalis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;450;500;600;700&display=swap" rel="stylesheet">
+  <style>
+  /* ===================================================================
+     THEME TOKENS
+     ================================================================ */
+  :root,
+  [data-theme="light"] {
+    --bg:               #ffffff;
+    --bg-sidebar:       #fafafa;
+    --surface:          #f4f4f5;
+    --surface-hover:    #ececee;
+    --surface-active:   #e4e4e7;
+    --border:           #e8e8ea;
+    --border-strong:    #d4d4d8;
+    --text:             #09090b;
+    --text-secondary:   #52525b;
+    --text-tertiary:    #71717a;
+    --text-quaternary:  #a1a1aa;
+    --accent:           #09090b;
+    --accent-soft:      #f4f4f5;
+    --accent-text:      #ffffff;
+    --user-bubble:      #f0f0f1;
+    --tool-bg:          #fafafa;
+    --tool-border:      #e8e8ea;
+    --tool-text:        #3f3f46;
+    --status-pending:   #d97706;
+    --status-active:    #16a34a;
+    --status-awaiting:  #2563eb;
+    --status-inactive:  #71717a;
+    --shadow-sm:        0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md:        0 4px 14px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-input:     0 0 0 4px rgba(9,9,11,0.04);
+  }
+
+  [data-theme="dark"] {
+    --bg:               #0a0a0a;
+    --bg-sidebar:       #0f0f10;
+    --surface:          #18181b;
+    --surface-hover:    #1f1f23;
+    --surface-active:   #27272a;
+    --border:           #1f1f22;
+    --border-strong:    #2e2e33;
+    --text:             #fafafa;
+    --text-secondary:   #a1a1aa;
+    --text-tertiary:    #71717a;
+    --text-quaternary:  #52525b;
+    --accent:           #fafafa;
+    --accent-soft:      #1f1f23;
+    --accent-text:      #09090b;
+    --user-bubble:      #1f1f23;
+    --tool-bg:          #131316;
+    --tool-border:      #2a2a2e;
+    --tool-text:        #c4c4c7;
+    --status-pending:   #fbbf24;
+    --status-active:    #22c55e;
+    --status-awaiting:  #60a5fa;
+    --status-inactive:  #a1a1aa;
+    --shadow-sm:        0 1px 2px rgba(0,0,0,0.3);
+    --shadow-md:        0 4px 14px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-input:     0 0 0 4px rgba(250,250,250,0.04);
+  }
+
+  /* ===================================================================
+     RESET & BASE
+     ================================================================ */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Geist', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+  }
+
+  textarea {
+    font-family: inherit;
+    color: inherit;
+  }
+
+  /* ===================================================================
+     LAYOUT
+     ================================================================ */
+  .app {
+    display: flex;
+    height: 100vh;
+  }
+
+  /* ===================================================================
+     SIDEBAR
+     ================================================================ */
+  .sidebar {
+    width: 280px;
+    min-width: 280px;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .sidebar-top {
+    padding: 18px 16px 12px;
+    flex-shrink: 0;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 6px;
+    margin-bottom: 14px;
+  }
+
+  .brand-mark {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: var(--accent-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+  }
+
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+    min-width: 0;
+  }
+
+  .brand-name {
+    font-weight: 500;
+    font-size: 14.5px;
+    letter-spacing: -0.012em;
+    color: var(--text);
+  }
+
+  .brand-tagline {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.01em;
+    margin-top: 2px;
+  }
+
+  .new-chat-btn {
+    width: 100%;
+    padding: 9px 11px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13.5px;
+    font-weight: 450;
+    color: var(--text);
+    transition: background-color 0.12s ease, border-color 0.12s ease, transform 0.06s ease;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .new-chat-btn:hover {
+    background: var(--surface);
+    border-color: var(--border-strong);
+  }
+
+  .new-chat-btn:active { transform: translateY(0.5px); }
+
+  .new-chat-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  .sidebar-section-label {
+    padding: 14px 18px 6px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  /* Sessions list */
+  .sessions-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 8px 12px;
+  }
+
+  .sessions-scroll::-webkit-scrollbar { width: 6px; }
+  .sessions-scroll::-webkit-scrollbar-track { background: transparent; }
+  .sessions-scroll::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 3px;
+  }
+
+  .session-item {
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+    margin-bottom: 1px;
+  }
+
+  .session-item:hover { background: var(--surface); }
+
+  .session-item.active {
+    background: var(--surface-active);
+  }
+
+  .session-intent {
+    font-size: 13.5px;
+    color: var(--text);
+    line-height: 1.4;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+    font-weight: 450;
+  }
+
+  .session-meta {
+    margin-top: 3px;
+    font-size: 11.5px;
+    color: var(--text-tertiary);
+    line-height: 1.3;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  .session-meta-divider {
+    color: var(--text-quaternary);
+    flex-shrink: 0;
+  }
+
+  .session-framework {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-tertiary);
+  }
+
+  /* skeleton */
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg,
+      var(--surface) 25%,
+      var(--surface-hover) 50%,
+      var(--surface) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+  }
+
+  .skel-item {
+    padding: 9px 10px;
+    margin-bottom: 1px;
+  }
+
+  .skel-line {
+    height: 12px;
+    margin-bottom: 5px;
+  }
+
+  .skel-sub {
+    height: 10px;
+    width: 38%;
+  }
+
+  .empty-state {
+    padding: 24px 12px;
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* Sidebar bottom (theme toggle) */
+  .sidebar-bottom {
+    padding: 10px 12px 14px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .theme-toggle {
+    width: 100%;
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 450;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    transition: background-color 0.12s ease, color 0.12s ease;
+  }
+
+  .theme-toggle:hover {
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .theme-toggle svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  .theme-toggle .icon-moon { display: none; }
+  [data-theme="dark"] .theme-toggle .icon-sun  { display: none; }
+  [data-theme="dark"] .theme-toggle .icon-moon { display: block; }
+
+  /* ===================================================================
+     MAIN PANEL
+     ================================================================ */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+    transition: background-color 0.2s ease;
+  }
+
+  .chat-header {
+    height: 56px;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    transition: border-color 0.2s ease;
+  }
+
+  .header-empty {
+    color: var(--text-tertiary);
+    font-size: 13px;
+  }
+
+  .header-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1;
+  }
+
+  /* status badge (header) — colored pill with dot */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 3px 10px 3px 9px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 500;
+    flex-shrink: 0;
+    line-height: 1.35;
+  }
+
+  .status-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  @keyframes statusPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.45; transform: scale(0.78); }
+  }
+
+  .status-badge[data-status="Pending"] {
+    color: var(--status-pending);
+    background: color-mix(in srgb, var(--status-pending) 12%, transparent);
+  }
+  .status-badge[data-status="Pending"] .status-badge-dot {
+    background: var(--status-pending);
+    animation: statusPulse 1.8s ease-in-out infinite;
+  }
+
+  .status-badge[data-status="Active"] {
+    color: var(--status-active);
+    background: color-mix(in srgb, var(--status-active) 11%, transparent);
+  }
+  .status-badge[data-status="Active"] .status-badge-dot {
+    background: var(--status-active);
+    animation: statusPulse 1.4s ease-in-out infinite;
+  }
+
+  .status-badge[data-status="Awaiting User Input"] {
+    color: var(--status-awaiting);
+    background: color-mix(in srgb, var(--status-awaiting) 11%, transparent);
+  }
+  .status-badge[data-status="Awaiting User Input"] .status-badge-dot {
+    background: var(--status-awaiting);
+  }
+
+  .status-badge[data-status="Inactive"] {
+    color: var(--status-inactive);
+    background: color-mix(in srgb, var(--status-inactive) 12%, transparent);
+  }
+  .status-badge[data-status="Inactive"] .status-badge-dot {
+    background: var(--status-inactive);
+  }
+
+  /* header action button (download files, etc.) */
+  .header-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px 4px 10px;
+    background: var(--bg);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    color: var(--text);
+    flex-shrink: 0;
+    line-height: 1.4;
+    transition: background-color 0.12s ease, border-color 0.12s ease,
+                color 0.12s ease, transform 0.06s ease;
+  }
+  .header-action-btn:hover:not(:disabled) {
+    background: var(--surface);
+    border-color: var(--text-quaternary);
+  }
+  .header-action-btn:active:not(:disabled) { transform: translateY(0.5px); }
+  .header-action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .header-action-btn svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+  }
+  .header-action-btn[data-state="loading"] svg { animation: spin 0.9s linear infinite; }
+  .header-action-btn[data-state="success"] {
+    color: var(--status-active);
+    border-color: color-mix(in srgb, var(--status-active) 35%, transparent);
+    background: color-mix(in srgb, var(--status-active) 8%, transparent);
+  }
+  .header-action-btn[data-state="error"] {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.32);
+    background: rgba(239, 68, 68, 0.06);
+  }
+  [data-theme="dark"] .header-action-btn[data-state="error"] {
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.32);
+    background: rgba(248, 113, 113, 0.08);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* sidebar status dot — small, sits in the session meta row */
+  .session-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--status-inactive);
+    flex-shrink: 0;
+  }
+  .session-status-dot[data-status="Pending"]  { background: var(--status-pending);  animation: statusPulse 1.8s ease-in-out infinite; }
+  .session-status-dot[data-status="Active"]   { background: var(--status-active);   animation: statusPulse 1.4s ease-in-out infinite; }
+  .session-status-dot[data-status="Awaiting User Input"] { background: var(--status-awaiting); }
+  .session-status-dot[data-status="Inactive"] { background: var(--status-inactive); }
+
+  /* ===================================================================
+     MESSAGES
+     ================================================================ */
+  .messages-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 24px 8px;
+    scroll-behavior: smooth;
+  }
+
+  .messages-area::-webkit-scrollbar { width: 8px; }
+  .messages-area::-webkit-scrollbar-track { background: transparent; }
+  .messages-area::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 4px;
+  }
+
+  .messages-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+  }
+
+  /* welcome */
+  .welcome {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+  }
+
+  .welcome-mark {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--accent);
+    color: var(--accent-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 18px;
+  }
+
+  .welcome-title {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.018em;
+    margin-bottom: 6px;
+  }
+
+  .welcome-subtitle {
+    font-size: 14.5px;
+    color: var(--text-tertiary);
+    line-height: 1.55;
+    max-width: 380px;
+  }
+
+  .welcome-suggestions {
+    margin-top: 26px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    max-width: 520px;
+    width: 100%;
+  }
+
+  .suggestion {
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 13.5px;
+    text-align: left;
+    color: var(--text-secondary);
+    line-height: 1.45;
+    transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  }
+
+  .suggestion:hover {
+    background: var(--surface);
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+
+  .suggestion-title {
+    font-weight: 500;
+    color: var(--text);
+    font-size: 13.5px;
+    margin-bottom: 2px;
+  }
+
+  /* message bubbles */
+  @keyframes msgFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg {
+    animation: msgFadeIn 0.22s ease forwards;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* User: right-aligned soft bubble */
+  .msg.user {
+    align-items: flex-end;
+  }
+
+  .msg.user .msg-bubble {
+    max-width: 76%;
+    padding: 10px 14px;
+    background: var(--user-bubble);
+    color: var(--text);
+    border-radius: 18px 18px 4px 18px;
+    font-size: 14.5px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* Agent: full-width, no bubble — ChatGPT-style */
+  .msg.agent {
+    width: 100%;
+  }
+
+  .msg.agent .msg-bubble {
+    color: var(--text);
+    font-size: 14.5px;
+    line-height: 1.65;
+  }
+
+  .agent-text {
+    word-break: break-word;
+  }
+  .agent-text + .agent-text { margin-top: 12px; }
+  .agent-text + .tool-row,
+  .tool-row  + .agent-text { margin-top: 10px; }
+
+  /* Markdown rendering inside agent text -------------------------------- */
+  .agent-text > :first-child { margin-top: 0; }
+  .agent-text > :last-child  { margin-bottom: 0; }
+
+  .agent-text h1, .agent-text h2, .agent-text h3,
+  .agent-text h4, .agent-text h5, .agent-text h6 {
+    font-weight: 600;
+    margin: 16px 0 6px;
+    line-height: 1.3;
+    letter-spacing: -0.012em;
+    color: var(--text);
+  }
+  .agent-text h1 { font-size: 20px; }
+  .agent-text h2 { font-size: 17px; }
+  .agent-text h3 { font-size: 15.5px; }
+  .agent-text h4 { font-size: 14.5px; font-weight: 500; }
+  .agent-text h5, .agent-text h6 { font-size: 13.5px; font-weight: 500; color: var(--text-secondary); }
+
+  .agent-text p { margin: 0 0 10px; white-space: pre-wrap; }
+  .agent-text p:last-child { margin-bottom: 0; }
+
+  .agent-text ul, .agent-text ol {
+    margin: 4px 0 10px;
+    padding-left: 22px;
+  }
+  .agent-text li { margin: 2px 0; }
+  .agent-text li > p { margin: 0; display: inline; }
+
+  .agent-text code {
+    font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.86em;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1px 5px;
+    color: var(--text);
+  }
+
+  .agent-text pre {
+    margin: 10px 0;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 12.5px;
+    line-height: 1.55;
+  }
+  .agent-text pre code {
+    font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    color: var(--text);
+  }
+
+  .agent-text blockquote {
+    margin: 8px 0;
+    padding: 2px 0 2px 14px;
+    border-left: 3px solid var(--border-strong);
+    color: var(--text-secondary);
+  }
+
+  .agent-text strong { font-weight: 600; color: var(--text); }
+  .agent-text em { font-style: italic; }
+
+  .agent-text a {
+    color: var(--text);
+    text-decoration: underline;
+    text-decoration-color: var(--border-strong);
+    text-underline-offset: 2px;
+    transition: text-decoration-color 0.12s ease;
+  }
+  .agent-text a:hover { text-decoration-color: var(--text); }
+
+  .agent-text hr {
+    margin: 14px 0;
+    border: none;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Tables — wrapped so wide tables scroll horizontally without
+     blowing out the chat column. */
+  .agent-text .md-table-wrap {
+    margin: 12px 0;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+  }
+
+  .agent-text table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 0;
+  }
+
+  .agent-text thead {
+    background: var(--surface);
+  }
+
+  .agent-text th,
+  .agent-text td {
+    padding: 8px 14px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    line-height: 1.5;
+  }
+
+  .agent-text th:last-child,
+  .agent-text td:last-child { border-right: none; }
+
+  .agent-text tbody tr:last-child td { border-bottom: none; }
+
+  .agent-text th {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 12.5px;
+    letter-spacing: 0.005em;
+    border-bottom: 1px solid var(--border-strong);
+    white-space: nowrap;
+  }
+
+  .agent-text td {
+    color: var(--text-secondary);
+  }
+
+  .agent-text tbody tr:hover {
+    background: var(--surface);
+  }
+
+  /* Inline elements inside cells stay tight */
+  .agent-text th > code,
+  .agent-text td > code {
+    font-size: 0.92em;
+  }
+
+  /* Streaming cursor */
+  @keyframes cursorBlink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+
+  .msg.agent.streaming .agent-text:last-child::after {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 14px;
+    margin-left: 3px;
+    vertical-align: -2px;
+    background: var(--text);
+    border-radius: 1.5px;
+    animation: cursorBlink 0.8s step-end infinite;
+  }
+
+  .msg.agent.streaming .msg-bubble > *:last-child.tool-row::after {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 14px;
+    margin-left: 4px;
+    vertical-align: middle;
+    background: var(--text);
+    border-radius: 1.5px;
+    animation: cursorBlink 0.8s step-end infinite;
+  }
+
+  /* Tool pills */
+  .tool-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .tool-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px 4px 8px;
+    background: var(--tool-bg);
+    border: 1px solid var(--tool-border);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 450;
+    color: var(--tool-text);
+    line-height: 1.35;
+    white-space: nowrap;
+  }
+
+  .tool-icon {
+    width: 12px;
+    height: 12px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+
+  /* Collapsed tool group — one summary pill + "+N more" affordance.
+     Hover or focus reveals the full list in a popover below. Using a
+     popover (not inline expansion) keeps the message layout from
+     shifting when the user hovers. */
+  .tool-group {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tool-group-summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: default;
+  }
+  .tool-more {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border: 1px dashed var(--tool-border);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    line-height: 1.35;
+    background: transparent;
+    transition: color 0.12s ease, border-color 0.12s ease,
+                background-color 0.12s ease, border-style 0.12s ease;
+  }
+  .tool-group:hover .tool-more,
+  .tool-group:focus-within .tool-more {
+    color: var(--tool-color);
+    border-color: var(--tool-color);
+    border-style: solid;
+    background: var(--tool-bg);
+  }
+
+  .tool-group-popover {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 20;
+    padding: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    box-shadow: var(--shadow-md);
+    display: none;
+    flex-wrap: wrap;
+    gap: 5px;
+    min-width: 220px;
+    max-width: 440px;
+  }
+  .tool-group:hover .tool-group-popover,
+  .tool-group:focus-within .tool-group-popover {
+    display: flex;
+  }
+  /* Invisible bridge keeps the popover open while moving the cursor
+     across the small gap between the summary and the popover. */
+  .tool-group::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 8px;
+    display: none;
+  }
+  .tool-group:hover::after,
+  .tool-group:focus-within::after { display: block; }
+
+  /* Thinking indicator */
+  .thinking {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+    animation: msgFadeIn 0.22s ease forwards;
+  }
+
+  @keyframes dotPulse {
+    0%, 80%, 100% { transform: scale(0.7); opacity: 0.35; }
+    40%            { transform: scale(1); opacity: 1; }
+  }
+
+  .thinking-dots {
+    display: flex;
+    gap: 5px;
+  }
+
+  .thinking-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-tertiary);
+  }
+  .thinking-dot:nth-child(1) { animation: dotPulse 1.4s 0s    ease-in-out infinite; }
+  .thinking-dot:nth-child(2) { animation: dotPulse 1.4s 0.18s ease-in-out infinite; }
+  .thinking-dot:nth-child(3) { animation: dotPulse 1.4s 0.36s ease-in-out infinite; }
+
+  .thinking-label {
+    font-size: 13px;
+    color: var(--text-tertiary);
+  }
+
+  /* framework chip (header badge — read-only) */
+  .framework-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    line-height: 1.4;
+  }
+
+  .framework-chip-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--text-quaternary);
+    flex-shrink: 0;
+  }
+  .framework-chip[data-framework="ADK"] .framework-chip-dot { background: #4285f4; }
+  .framework-chip[data-framework="Claude Code SDK"] .framework-chip-dot { background: #cc785c; }
+
+  /* ===================================================================
+     INPUT AREA
+     ================================================================ */
+  .input-area {
+    padding: 12px 24px 20px;
+    flex-shrink: 0;
+  }
+
+  .input-inner {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  /* framework selector — segmented control above the input */
+  .framework-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    padding: 0 4px;
+  }
+
+  .framework-label {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+  }
+
+  .framework-options {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .framework-option {
+    padding: 4px 12px;
+    border-radius: 7px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    font-weight: 450;
+    transition: background-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  .framework-option:hover { color: var(--text); }
+
+  .framework-option.selected {
+    background: var(--bg);
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+    font-weight: 500;
+  }
+
+  .input-box {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    padding: 10px 10px 10px 16px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .input-box:focus-within {
+    border-color: var(--text-quaternary);
+    box-shadow: var(--shadow-input);
+  }
+
+  .chat-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 14.5px;
+    line-height: 1.5;
+    resize: none;
+    min-height: 22px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 4px 0;
+  }
+
+  .chat-input::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  .chat-input::-webkit-scrollbar { width: 4px; }
+  .chat-input::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+
+  .send-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--accent);
+    color: var(--accent-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.12s ease, transform 0.06s ease, background-color 0.12s ease;
+  }
+
+  .send-btn:hover:not(:disabled) { opacity: 0.85; }
+  .send-btn:active:not(:disabled) { transform: translateY(0.5px); }
+
+  .send-btn:disabled {
+    background: var(--surface);
+    color: var(--text-quaternary);
+    cursor: not-allowed;
+  }
+
+  .send-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .input-hint {
+    margin-top: 8px;
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--text-tertiary);
+  }
+
+  /* Tool activity ticker — lives at the foot of the conversation flow,
+     aligned with the message column. Survives renderMessages() because it
+     sits in #messagesArea but outside #messagesContent (which is what gets
+     re-innerHTML'd). The typewriter caret therefore doesn't restart on
+     every WebSocket push. */
+  .tool-activity {
+    max-width: 760px;
+    width: 100%;
+    margin: 0 auto;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.2s ease, padding 0.3s ease;
+    padding: 0;
+  }
+  .tool-activity.active {
+    max-height: 36px;
+    opacity: 1;
+    padding: 6px 0 12px;
+  }
+  .tool-activity-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    line-height: 1.4;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .tool-activity-name {
+    flex-shrink: 0;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--tool-color);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .tool-activity-sep {
+    flex-shrink: 0;
+    color: var(--text-quaternary);
+    font-size: 11px;
+  }
+  .tool-activity-input {
+    flex: 1;
+    min-width: 0;
+    font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Blinking block caret while the typewriter is mid-stroke — uses the
+     tool accent colour so it reads as part of the live activity. */
+  .tool-activity-input.typing::after {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 13px;
+    background: var(--tool-color);
+    margin-left: 2px;
+    vertical-align: -2px;
+    border-radius: 1px;
+    animation: cursorBlink 0.55s step-end infinite;
+  }
+
+  /* Subtle slide+fade when a brand-new tool activity replaces an old one,
+     so the typewriter has a clear "kick-off" beat that the user notices. */
+  @keyframes toolActivityEnter {
+    from { transform: translateY(3px); opacity: 0.35; }
+    to   { transform: translateY(0);   opacity: 1; }
+  }
+  .tool-activity.active .tool-activity-row {
+    animation: toolActivityEnter 0.22s ease forwards;
+  }
+
+  /* Skill notice: shown in place of the input when a Skill is running */
+  .skill-notice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    line-height: 1.4;
+  }
+
+  .skill-notice-title {
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .skill-notice-subtitle {
+    color: var(--text-tertiary);
+    font-size: 12.5px;
+  }
+
+  .skill-notice .thinking-dots { gap: 4px; }
+  .skill-notice .thinking-dot  { width: 5px; height: 5px; }
+
+  .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="brand">
+          <div class="brand-mark">C</div>
+          <div class="brand-text">
+            <div class="brand-name">Chrysalis</div>
+            <div class="brand-tagline">Build agents that work</div>
+          </div>
+        </div>
+
+        <button class="new-chat-btn" id="newBtn" aria-label="New agent">
+          <svg class="new-chat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+            <path d="M8 3.5v9M3.5 8h9"/>
+          </svg>
+          <span>New agent</span>
+        </button>
+      </div>
+
+      <div class="sidebar-section-label">Your agents</div>
+
+      <div class="sessions-scroll" id="sessionsList"></div>
+
+      <div class="sidebar-bottom">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+          <span id="themeLabel">Light theme</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <main class="main">
+
+      <div class="chat-header" id="chatHeader">
+        <span class="header-empty">No session selected</span>
+      </div>
+
+      <div class="messages-area" id="messagesArea">
+        <div id="messagesContent">
+          <!-- welcome or messages-inner rendered here -->
+        </div>
+        <div class="tool-activity" id="toolActivity" aria-live="polite"></div>
+      </div>
+
+      <div class="input-area">
+        <div class="input-inner">
+          <div id="inputContent">
+            <div class="framework-row" id="frameworkRow">
+              <span class="framework-label">Framework</span>
+              <div class="framework-options" id="frameworkOptions">
+                <button class="framework-option" data-framework="Claude Code SDK">Claude Code SDK</button>
+                <button class="framework-option" data-framework="ADK">ADK</button>
+              </div>
+            </div>
+            <div class="input-box">
+              <textarea
+                id="chatInput"
+                class="chat-input"
+                rows="1"
+                placeholder="Describe the agent you want to build…"
+              ></textarea>
+              <button id="sendBtn" class="send-btn" aria-label="Send" disabled>
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M8 13V3M3.5 7.5L8 3l4.5 4.5"/>
+                </svg>
+              </button>
+            </div>
+            <div class="input-hint">Press <strong style="font-weight:500;color:var(--text-secondary)">Enter</strong> to send · <strong style="font-weight:500;color:var(--text-secondary)">Shift + Enter</strong> for newline</div>
+          </div>
+
+          <div class="skill-notice hidden" id="skillNotice">
+            <div class="thinking-dots">
+              <div class="thinking-dot"></div>
+              <div class="thinking-dot"></div>
+              <div class="thinking-dot"></div>
+            </div>
+            <div>
+              <div class="skill-notice-title" id="skillNoticeTitle">Agent is working</div>
+              <div class="skill-notice-subtitle" id="skillNoticeSubtitle">Follow-ups are paused until the agent finishes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+  // ===================================================================
+  //  STATE
+  // ===================================================================
+  const FRAMEWORKS = ['Claude Code SDK', 'ADK'];
+  const DEFAULT_FRAMEWORK = 'Claude Code SDK';
+
+  const S = {
+    sessions: [],
+    activeId: null,
+    states:   {},  // sessionId → per-session state
+    loading:  true,
+    selectedFramework: DEFAULT_FRAMEWORK,  // for next created session
+  };
+
+  function getState(id) {
+    if (!S.states[id]) {
+      S.states[id] = {
+        userMessages: [],
+        boundaries:   [],
+        history:      [],
+        ws:           null,
+        isLive:       false,
+        status:       '',
+        initialized:  false,
+      };
+    }
+    return S.states[id];
+  }
+
+  // Status helpers
+  const KNOWN_STATUSES = ['Pending', 'Active', 'Awaiting User Input', 'Inactive'];
+
+  function normalizeStatus(s) {
+    return KNOWN_STATUSES.includes(s) ? s : '';
+  }
+
+  function statusLabel(s) {
+    if (s === 'Awaiting User Input') return 'Awaiting input';
+    return s || '';
+  }
+
+  function isWorkingStatus(s) {
+    return s === 'Pending' || s === 'Active';
+  }
+
+  function normalizeFramework(f) {
+    return FRAMEWORKS.includes(f) ? f : '';
+  }
+
+  // ===================================================================
+  //  THEME
+  // ===================================================================
+  function applyTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('chrysalis-theme', theme);
+    const label = document.getElementById('themeLabel');
+    if (label) label.textContent = theme === 'dark' ? 'Dark theme' : 'Light theme';
+  }
+
+  function initTheme() {
+    const saved = localStorage.getItem('chrysalis-theme');
+    if (saved) {
+      applyTheme(saved);
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyTheme(prefersDark ? 'dark' : 'light');
+    }
+  }
+
+  function toggleTheme() {
+    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+  }
+
+  // ===================================================================
+  //  UTILITIES
+  // ===================================================================
+  function relTime(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d) || d.getFullYear() < 2000) return '';
+    const diff = Math.floor((Date.now() - d.getTime()) / 1000);
+    if (diff < 60)    return 'just now';
+    if (diff < 3600)  return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  function esc(s) {
+    return String(s ?? '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Tool icons as inline SVG strings — clean line-icon style
+  const TOOL_ICON_SVG = {
+    Bash: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l3 3-3 3M8 11h5"/></svg>`,
+    Read: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 3h6a2 2 0 0 1 2 2v8a1.5 1.5 0 0 0-1.5-1.5H2.5V3z"/><path d="M13.5 3h-6a2 2 0 0 0-2 2v8a1.5 1.5 0 0 1 1.5-1.5h6.5V3z"/></svg>`,
+    Write:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>`,
+    Edit: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>`,
+    Grep: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="4"/><path d="M10 10l3.5 3.5"/></svg>`,
+    Find: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="4"/><path d="M10 10l3.5 3.5"/></svg>`,
+    WebFetch: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M2 8h12M8 2c2 2 2 10 0 12M8 2c-2 2-2 10 0 12"/></svg>`,
+    WebSearch: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="4"/><path d="M10 10l3.5 3.5"/></svg>`,
+    Agent:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="10" height="9" rx="2"/><circle cx="6.5" cy="8.5" r="0.7" fill="currentColor"/><circle cx="9.5" cy="8.5" r="0.7" fill="currentColor"/><path d="M8 2v2"/></svg>`,
+    Task: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="10" height="10" rx="2"/><path d="M5.5 8l1.5 1.5L10.5 6"/></svg>`,
+  };
+
+  const TOOL_ICON_DEFAULT = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2"/><path d="M8 1.5v2M8 12.5v2M14.5 8h-2M3.5 8h-2M12.6 3.4l-1.4 1.4M4.8 11.2l-1.4 1.4M12.6 12.6l-1.4-1.4M4.8 4.8L3.4 3.4"/></svg>`;
+
+  function toolIconSvg(name) {
+    return TOOL_ICON_SVG[name] || TOOL_ICON_DEFAULT;
+  }
+
+  function isToolItem(item)      { return item && item.role === 'Tool'; }
+  function isAssistantItem(item) { return item && item.role === 'Assistant'; }
+
+  // ===================================================================
+  //  MARKDOWN RENDERER (minimal, safe)
+  // ===================================================================
+  // Pipeline:
+  //   1. Pull out fenced code blocks (preserve content verbatim).
+  //   2. Pull out inline backtick code (so inline markers inside don't fire).
+  //   3. HTML-escape everything else.
+  //   4. Split into blocks (separated by blank lines); detect headings,
+  //      lists, blockquotes, hr, or fall back to paragraph.
+  //   5. Inline-process bold / italic / link inside each block's text.
+  //   6. Re-insert escaped code-block and inline-code content.
+  function renderMarkdown(src) {
+    if (!src) return '';
+
+    // 1. Extract fenced code blocks
+    const codeBlocks = [];
+    src = src.replace(/```([a-zA-Z0-9_+\-]*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+      codeBlocks.push({ lang, code });
+      return `\x00CB${codeBlocks.length - 1}\x00`;
+    });
+
+    // 2. Extract inline code
+    const inlineCodes = [];
+    src = src.replace(/`([^`\n]+?)`/g, (_, code) => {
+      inlineCodes.push(code);
+      return `\x00IC${inlineCodes.length - 1}\x00`;
+    });
+
+    // 3. Escape HTML on everything else
+    src = esc(src);
+
+    // 4. Split into blocks and process each
+    const blocks = src.split(/\n{2,}/);
+    const out = [];
+
+    for (let block of blocks) {
+      block = block.replace(/^\n+|\n+$/g, '');
+      if (!block) continue;
+
+      // Block-only code block placeholder
+      const cbOnly = block.match(/^\x00CB(\d+)\x00$/);
+      if (cbOnly) {
+        const { lang, code } = codeBlocks[+cbOnly[1]];
+        const cls = lang ? ` class="lang-${esc(lang)}"` : '';
+        out.push(`<pre><code${cls}>${esc(code)}</code></pre>`);
+        continue;
+      }
+
+      // Heading
+      const h = block.match(/^(#{1,6})\s+(.+)$/);
+      if (h && !h[2].includes('\n')) {
+        const n = h[1].length;
+        out.push(`<h${n}>${inlineMd(h[2])}</h${n}>`);
+        continue;
+      }
+
+      // Horizontal rule
+      if (/^(?:-{3,}|_{3,}|\*{3,})$/.test(block)) {
+        out.push('<hr>');
+        continue;
+      }
+
+      const lines = block.split('\n');
+
+      // Table (GFM): at least 2 lines, second is a separator like |---|---|
+      if (lines.length >= 2 && lines.some(l => l.includes('|'))) {
+        const sepCells = splitTableRow(lines[1]);
+        if (sepCells && sepCells.length > 0 &&
+            sepCells.every(c => /^:?-+:?$/.test(c.trim()))) {
+          const headerCells = splitTableRow(lines[0]);
+          if (headerCells && headerCells.length === sepCells.length) {
+            const aligns = sepCells.map(c => {
+              const t = c.trim();
+              const l = t.startsWith(':'), r = t.endsWith(':');
+              if (l && r) return 'center';
+              if (r)      return 'right';
+              if (l)      return 'left';
+              return '';
+            });
+
+            const renderCell = (tag, c, i) => {
+              const style = aligns[i] ? ` style="text-align:${aligns[i]}"` : '';
+              return `<${tag}${style}>${inlineMd((c || '').trim())}</${tag}>`;
+            };
+
+            const thead = `<thead><tr>${
+              headerCells.map((c, i) => renderCell('th', c, i)).join('')
+            }</tr></thead>`;
+
+            const bodyRows = lines.slice(2)
+              .map(l => splitTableRow(l))
+              .filter(r => r && r.length);
+
+            const tbody = bodyRows.length ? `<tbody>${
+              bodyRows.map(row => {
+                // Pad short rows so cells line up with the header
+                const padded = row.slice(0, headerCells.length);
+                while (padded.length < headerCells.length) padded.push('');
+                return `<tr>${padded.map((c, i) => renderCell('td', c, i)).join('')}</tr>`;
+              }).join('')
+            }</tbody>` : '';
+
+            out.push(`<div class="md-table-wrap"><table>${thead}${tbody}</table></div>`);
+            continue;
+          }
+        }
+      }
+
+      // Bullet list
+      if (lines.every(l => /^\s*[-*+]\s+/.test(l))) {
+        const items = lines.map(l =>
+          `<li>${inlineMd(l.replace(/^\s*[-*+]\s+/, ''))}</li>`
+        ).join('');
+        out.push(`<ul>${items}</ul>`);
+        continue;
+      }
+
+      // Numbered list
+      if (lines.every(l => /^\s*\d+\.\s+/.test(l))) {
+        const items = lines.map(l =>
+          `<li>${inlineMd(l.replace(/^\s*\d+\.\s+/, ''))}</li>`
+        ).join('');
+        out.push(`<ol>${items}</ol>`);
+        continue;
+      }
+
+      // Blockquote
+      if (lines.every(l => /^>\s?/.test(l))) {
+        const inner = lines.map(l => l.replace(/^>\s?/, '')).join(' ');
+        out.push(`<blockquote>${inlineMd(inner)}</blockquote>`);
+        continue;
+      }
+
+      // Paragraph (line breaks become <br>)
+      const para = lines.map(l => inlineMd(l)).join('<br>');
+      out.push(`<p>${para}</p>`);
+    }
+
+    let html = out.join('');
+
+    // 6. Restore inline code (escaped)
+    html = html.replace(/\x00IC(\d+)\x00/g, (_, i) =>
+      `<code>${esc(inlineCodes[+i])}</code>`
+    );
+
+    return html;
+  }
+
+  // Split a GFM-style table row on '|' into cells. Leading/trailing pipes
+  // are optional. Returns null if the line has no pipe at all.
+  function splitTableRow(line) {
+    let s = (line || '').trim();
+    if (!s.includes('|')) return null;
+    if (s.startsWith('|')) s = s.slice(1);
+    if (s.endsWith('|'))   s = s.slice(0, -1);
+    return s.split('|');
+  }
+
+  // Inline markdown — bold, italic, link.  Input is HTML-escaped and
+  // still contains \x00IC<n>\x00 placeholders (preserved through).
+  function inlineMd(text) {
+    // Bold (** ** or __ __)  — done before italic so ** doesn't get
+    // consumed as two italic markers.
+    text = text.replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/(^|[^\w])__([^_\n]+?)__(?=$|[^\w])/g, '$1<strong>$2</strong>');
+
+    // Italic
+    text = text.replace(/(^|[^*\w])\*([^*\n]+?)\*(?=$|[^*\w])/g, '$1<em>$2</em>');
+    text = text.replace(/(^|[^_\w])_([^_\n]+?)_(?=$|[^_\w])/g, '$1<em>$2</em>');
+
+    // Link [text](url)
+    text = text.replace(
+      /\[([^\]\n]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g,
+      '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+    );
+
+    return text;
+  }
+
+  // ===================================================================
+  //  DOWNLOAD (compressed code archive)
+  // ===================================================================
+  const DOWNLOAD_ICONS = {
+    idle:    `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M4.5 6.5L8 10l3.5-3.5"/><path d="M3 13h10"/></svg>`,
+    loading: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M14 8a6 6 0 1 1-3-5.2"/></svg>`,
+    success: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5 7-7"/></svg>`,
+    error:   `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l10 10M13 3l-10 10"/></svg>`,
+  };
+
+  const DOWNLOAD_LABELS = {
+    idle:    'Download files',
+    loading: 'Preparing…',
+    success: 'Downloaded',
+    error:   'Try again',
+  };
+
+  function setDownloadState(btn, state) {
+    if (!btn) return;
+    btn.dataset.state = state;
+    btn.disabled = state === 'loading';
+    btn.innerHTML = `${DOWNLOAD_ICONS[state]}<span>${DOWNLOAD_LABELS[state]}</span>`;
+  }
+
+  // Slugify the agent intent into something filename-safe so the downloaded
+  // archive has a meaningful name instead of just an opaque id.
+  function downloadFilenameFor(sessionId) {
+    const session = S.sessions.find(s => s.id === sessionId);
+    const slug = (session?.intent || 'agent')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 40);
+    return `chrysalis-${slug || 'agent'}-${sessionId.slice(0, 8)}.tar.gz`;
+  }
+
+  async function downloadAgentFiles(sessionId) {
+    // The button is recreated on every renderHeader() — grab a fresh ref
+    // each time we change state, in case the header re-rendered in between.
+    let btn = document.getElementById('downloadBtn');
+    setDownloadState(btn, 'loading');
+
+    try {
+      const r = await fetch(`/api/v1/sessions/${sessionId}/download`);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+
+      const blob = await r.blob();
+      if (blob.size === 0) throw new Error('empty archive');
+
+      // Browser-native download via a synthetic anchor with a filename.
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = downloadFilenameFor(sessionId);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      setDownloadState(document.getElementById('downloadBtn'), 'success');
+      setTimeout(() => setDownloadState(document.getElementById('downloadBtn'), 'idle'), 2200);
+    } catch (e) {
+      console.error('download:', e);
+      setDownloadState(document.getElementById('downloadBtn'), 'error');
+      setTimeout(() => setDownloadState(document.getElementById('downloadBtn'), 'idle'), 3000);
+    }
+  }
+
+  // ===================================================================
+  //  TOOL ACTIVITY TICKER (ephemeral)
+  // ===================================================================
+  // Shows the most recent tool invocation + its argument preview, just
+  // above the input. Types out, holds, then fades. Replaced immediately
+  // if a newer tool call arrives.
+  const TOOL_ACTIVITY_HOLD_MS = 4500;
+  let toolActivityHideTimer = null;
+  let toolActivityTypeTimer = null;
+
+  // Pull a one-line, human-readable preview out of the raw input JSON
+  // for the well-known tools; fall back to a compact JSON dump.
+  // Always returns *something* visible (even for empty/null payloads) so
+  // the typewriter has copy to animate — otherwise tools like Bash with
+  // an unexpected input shape would silently show the label and nothing
+  // after the chevron.
+  function formatToolInputPreview(toolName, rawInput) {
+    const placeholder = '(no arguments)';
+
+    if (!rawInput || rawInput === 'null') return placeholder;
+    let input;
+    try { input = JSON.parse(rawInput); } catch { return collapseWS(String(rawInput)) || placeholder; }
+    if (input == null) return placeholder;
+    if (typeof input !== 'object') return collapseWS(String(input)) || placeholder;
+    if (Object.keys(input).length === 0) return placeholder;
+
+    let preview;
+    switch (toolName) {
+      case 'Bash':         preview = input.command;                              break;
+      case 'Read':         preview = input.file_path;                            break;
+      case 'Write':        preview = input.file_path;                            break;
+      case 'Edit':         preview = input.file_path;                            break;
+      case 'NotebookEdit': preview = input.notebook_path || input.file_path;     break;
+      case 'Grep':         preview = input.pattern;                              break;
+      case 'Find':
+      case 'Glob':         preview = input.pattern || input.path;                break;
+      case 'WebFetch':     preview = input.url;                                  break;
+      case 'WebSearch':    preview = input.query;                                break;
+      case 'Skill':        preview = input.skill || input.name || input.args;    break;
+      case 'Task':
+      case 'Agent':        preview = input.description || input.prompt;          break;
+    }
+
+    // If the tool-specific lookup didn't yield anything (maybe the input
+    // has a slightly different shape than expected — e.g. a new Claude
+    // Code version's Bash variant), try a few well-known field names
+    // before giving up to compact JSON.
+    if (!preview) {
+      const candidates = ['command', 'cmd', 'file_path', 'path', 'pattern',
+                          'query', 'url', 'prompt', 'description', 'name', 'text'];
+      for (const k of candidates) {
+        if (typeof input[k] === 'string' && input[k]) { preview = input[k]; break; }
+      }
+    }
+    if (!preview) preview = JSON.stringify(input);
+
+    preview = collapseWS(String(preview));
+    if (!preview) return placeholder;
+    if (preview.length > 240) preview = preview.slice(0, 240) + '…';
+    return preview;
+  }
+
+  function collapseWS(s) { return s.replace(/\s+/g, ' ').trim(); }
+
+  // Typewriter sized so the animation is clearly perceptible:
+  //   – short text (a handful of chars) takes ~400-600ms (slow enough to
+  //     read characters land one-by-one)
+  //   – long text (200+ chars) takes ~1.8s tops (capped by minStep)
+  // The caret keeps blinking for a short beat after the last character
+  // lands so the "settling" moment is obvious.
+  function typewriter(el, text, opts) {
+    if (!el) return null;
+    const minStep  = opts?.minStep  ?? 22;   // never faster than this per char
+    const maxStep  = opts?.maxStep  ?? 75;   // never slower than this per char
+    const maxTotal = opts?.maxTotal ?? 1800; // target total duration for long text
+    const settle   = opts?.settle   ?? 450;  // caret holds this long after typing
+
+    el.textContent = '';
+    el.classList.add('typing');
+    if (!text) {
+      el.classList.remove('typing');
+      return null;
+    }
+
+    const target = Math.floor(maxTotal / text.length);
+    const stepMs = Math.max(minStep, Math.min(maxStep, target));
+
+    let i = 0;
+    const id = setInterval(() => {
+      i++;
+      el.textContent = text.slice(0, i);
+      if (i >= text.length) {
+        clearInterval(id);
+        setTimeout(() => el.classList.remove('typing'), settle);
+      }
+    }, stepMs);
+    return id;
+  }
+
+  function showToolActivity(toolName, rawInput) {
+    const el = document.getElementById('toolActivity');
+    if (!el) return;
+
+    // Reset any in-flight timers from a previous activity.
+    if (toolActivityHideTimer) { clearTimeout(toolActivityHideTimer); toolActivityHideTimer = null; }
+    if (toolActivityTypeTimer) { clearInterval(toolActivityTypeTimer); toolActivityTypeTimer = null; }
+
+    const preview = formatToolInputPreview(toolName, rawInput);
+
+    el.innerHTML = `
+      <div class="tool-activity-row">
+        <span class="tool-activity-name">${esc(toolName)}</span>
+        <span class="tool-activity-sep">›</span>
+        <span class="tool-activity-input"></span>
+      </div>
+    `;
+    el.classList.add('active');
+
+    const inputEl = el.querySelector('.tool-activity-input');
+    toolActivityTypeTimer = typewriter(inputEl, preview);
+
+    toolActivityHideTimer = setTimeout(() => {
+      el.classList.remove('active');
+    }, TOOL_ACTIVITY_HOLD_MS);
+  }
+
+  function hideToolActivity() {
+    const el = document.getElementById('toolActivity');
+    if (!el) return;
+    if (toolActivityHideTimer) { clearTimeout(toolActivityHideTimer); toolActivityHideTimer = null; }
+    if (toolActivityTypeTimer) { clearInterval(toolActivityTypeTimer); toolActivityTypeTimer = null; }
+    el.classList.remove('active');
+  }
+
+  // ===================================================================
+  //  SKILL STATE
+  // ===================================================================
+  // The agent has invoked a Skill when the most recent history item
+  // is a Tool entry whose content is exactly "Skill".  Once the skill
+  // produces output (next history item arrives), this resolves to false.
+  function isSkillRunning(state) {
+    const h = state && state.history;
+    if (!h || !h.length) return false;
+    const last = h[h.length - 1];
+    return last && last.role === 'Tool' && last.content === 'Skill';
+  }
+
+  // ===================================================================
+  //  RENDER — SIDEBAR
+  // ===================================================================
+  function renderSidebar() {
+    const el = document.getElementById('sessionsList');
+
+    if (S.loading) {
+      el.innerHTML = [80,65,75,55].map(w => `
+        <div class="skel-item">
+          <div class="skeleton skel-line" style="width:${w}%"></div>
+          <div class="skeleton skel-sub"></div>
+        </div>
+      `).join('');
+      return;
+    }
+
+    if (!S.sessions.length) {
+      el.innerHTML = `<div class="empty-state">No sessions yet</div>`;
+      return;
+    }
+
+    el.innerHTML = S.sessions.map(s => {
+      const status    = normalizeStatus(s.status);
+      const framework = normalizeFramework(s.framework);
+      const statusTxt = statusLabel(status) || relTime(s.created) || s.id.slice(0,8);
+      return `
+        <div class="session-item${s.id === S.activeId ? ' active' : ''}"
+             data-id="${esc(s.id)}">
+          <div class="session-intent">${esc(s.intent)}</div>
+          <div class="session-meta">
+            <span class="session-status-dot" data-status="${esc(status)}"
+                  title="${esc(statusLabel(status) || 'Unknown')}"></span>
+            <span>${esc(statusTxt)}</span>
+            ${framework ? `
+              <span class="session-meta-divider">·</span>
+              <span class="session-framework">${esc(framework)}</span>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    el.querySelectorAll('.session-item').forEach(node => {
+      node.addEventListener('click', () => selectSession(node.dataset.id));
+    });
+  }
+
+  // ===================================================================
+  //  RENDER — HEADER
+  // ===================================================================
+  function renderHeader() {
+    const el = document.getElementById('chatHeader');
+    if (!S.activeId) {
+      el.innerHTML = `<span class="header-empty">No agent selected</span>`;
+      return;
+    }
+    const session   = S.sessions.find(s => s.id === S.activeId);
+    const status    = normalizeStatus(getState(S.activeId).status);
+    const framework = normalizeFramework(session?.framework);
+    const showDownload = status === 'Inactive';
+
+    el.innerHTML = `
+      <span class="header-title">${esc(session?.intent || 'Untitled agent')}</span>
+      ${framework ? `
+        <span class="framework-chip" data-framework="${esc(framework)}" title="Framework">
+          <span class="framework-chip-dot"></span>
+          ${esc(framework)}
+        </span>
+      ` : ''}
+      ${showDownload ? `
+        <button id="downloadBtn" class="header-action-btn" data-state="idle"
+                title="Download the generated code as a .tar.gz archive">
+          ${DOWNLOAD_ICONS.idle}<span>${DOWNLOAD_LABELS.idle}</span>
+        </button>
+      ` : ''}
+      ${status ? `
+        <span class="status-badge" data-status="${esc(status)}">
+          <span class="status-badge-dot"></span>
+          ${esc(statusLabel(status))}
+        </span>
+      ` : ''}
+    `;
+  }
+
+  // ===================================================================
+  //  RENDER — MESSAGES
+  // ===================================================================
+  function renderAgentBlock(items, streaming) {
+    if (!items.length && !streaming) return '';
+
+    let inner = '';
+    let textBuf = '';
+    let toolBuf = [];
+
+    const flushText = () => {
+      if (textBuf.trim().length) {
+        inner += `<div class="agent-text">${renderMarkdown(textBuf)}</div>`;
+      }
+      textBuf = '';
+    };
+    const pillHtml = (name) => `
+      <span class="tool-pill">
+        <span class="tool-icon">${toolIconSvg(name)}</span>
+        ${esc(name)}
+      </span>
+    `;
+
+    const flushTools = () => {
+      if (!toolBuf.length) { toolBuf = []; return; }
+
+      if (toolBuf.length === 1) {
+        // Single tool — render as a plain pill.
+        inner += `<div class="tool-row">${pillHtml(toolBuf[0])}</div>`;
+      } else {
+        // Multiple tools — show first pill + "+N more" affordance, with
+        // the full list in a hover popover so the message layout never
+        // shifts on interaction.
+        const first   = toolBuf[0];
+        const rest    = toolBuf.length - 1;
+        const allHtml = toolBuf.map(pillHtml).join('');
+        inner += `
+          <div class="tool-row">
+            <div class="tool-group" tabindex="0"
+                 aria-label="${toolBuf.length} tool calls — hover to expand">
+              <div class="tool-group-summary">
+                ${pillHtml(first)}
+                <span class="tool-more">+${rest} more</span>
+              </div>
+              <div class="tool-group-popover" role="group">${allHtml}</div>
+            </div>
+          </div>
+        `;
+      }
+      toolBuf = [];
+    };
+
+    items.forEach(item => {
+      if (isAssistantItem(item)) {
+        // Skip empty / whitespace-only assistant chunks so they don't
+        // split an otherwise-consecutive run of tool calls into separate
+        // groups.
+        if (!item.content || !item.content.trim()) return;
+        flushTools();
+        textBuf += (textBuf ? '\n' : '') + item.content;
+      } else if (isToolItem(item)) {
+        flushText();
+        toolBuf.push(item.content || '');
+      }
+    });
+    flushText();
+    flushTools();
+
+    if (streaming && !inner.includes('agent-text')) {
+      inner = `<div class="agent-text"></div>` + inner;
+    }
+
+    return `
+      <div class="msg agent${streaming ? ' streaming' : ''}">
+        <div class="msg-bubble">${inner}</div>
+      </div>
+    `;
+  }
+
+  function renderWelcome(target) {
+    target.innerHTML = `
+      <div class="welcome">
+        <div class="welcome-mark">C</div>
+        <div class="welcome-title">Build a new agent</div>
+        <div class="welcome-subtitle">
+          Describe what your agent should do. Chrysalis will scaffold it using
+          your chosen framework and bring it to life.
+        </div>
+        <div class="welcome-suggestions">
+          <button class="suggestion" data-prompt="Build a research agent that reads recent ML papers and produces weekly summaries">
+            <div class="suggestion-title">Research agent</div>
+            Weekly summaries of new ML papers
+          </button>
+          <button class="suggestion" data-prompt="Build a code review agent that reviews pull requests for style, bugs, and missing tests">
+            <div class="suggestion-title">Code review agent</div>
+            Reviews PRs for style, bugs &amp; tests
+          </button>
+          <button class="suggestion" data-prompt="Build a SQL analyst agent that answers natural-language questions against our data warehouse">
+            <div class="suggestion-title">SQL analyst agent</div>
+            Natural-language questions over a warehouse
+          </button>
+          <button class="suggestion" data-prompt="Build a support triage agent that categorizes incoming tickets and drafts a first reply">
+            <div class="suggestion-title">Support triage agent</div>
+            Categorizes tickets and drafts replies
+          </button>
+        </div>
+      </div>
+    `;
+    target.querySelectorAll('.suggestion').forEach(node => {
+      node.addEventListener('click', () => {
+        const prompt = node.dataset.prompt;
+        const input  = document.getElementById('chatInput');
+        input.value = prompt;
+        input.dispatchEvent(new Event('input'));
+        input.focus();
+        updateSendBtn();
+      });
+    });
+  }
+
+  function renderMessages() {
+    const area    = document.getElementById('messagesArea');
+    const content = document.getElementById('messagesContent');
+
+    if (!S.activeId) {
+      renderWelcome(content);
+      return;
+    }
+
+    const state    = getState(S.activeId);
+    const atBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 140;
+
+    let html = '<div class="messages-inner">';
+
+    for (let i = 0; i < state.userMessages.length; i++) {
+      html += `
+        <div class="msg user">
+          <div class="msg-bubble">${esc(state.userMessages[i])}</div>
+        </div>
+      `;
+
+      const start = state.boundaries[i] ?? 0;
+      const end   = state.boundaries[i + 1] ?? state.history.length;
+      const slice = state.history.slice(start, end);
+
+      const isLastUser = i === state.userMessages.length - 1;
+      const streaming  = isLastUser && (isWorkingStatus(state.status) || (state.isLive && !state.status));
+
+      if (slice.length > 0) {
+        html += renderAgentBlock(slice, streaming);
+      } else if (streaming) {
+        html += `
+          <div class="thinking">
+            <div class="thinking-dots">
+              <div class="thinking-dot"></div>
+              <div class="thinking-dot"></div>
+              <div class="thinking-dot"></div>
+            </div>
+            <span class="thinking-label">Agent is working…</span>
+          </div>
+        `;
+      }
+    }
+
+    html += '</div>';
+    content.innerHTML = html;
+    if (atBottom) area.scrollTop = area.scrollHeight;
+  }
+
+  function renderAll() {
+    renderSidebar();
+    renderHeader();
+    renderMessages();
+    updatePlaceholder();
+    updateSendBtn();
+    renderFrameworkSelector();
+    updateInputVisibility();
+  }
+
+  function updateInputVisibility() {
+    const content      = document.getElementById('inputContent');
+    const notice       = document.getElementById('skillNotice');
+    const noticeTitle  = document.getElementById('skillNoticeTitle');
+    const noticeSub    = document.getElementById('skillNoticeSubtitle');
+    if (!content || !notice) return;
+
+    const state        = S.activeId ? getState(S.activeId) : null;
+    const skillRunning = !!(state && isSkillRunning(state));
+    const working      = !!(state && isWorkingStatus(state.status));
+    const hide         = skillRunning || working;
+
+    if (hide) {
+      // Skill takes precedence — it's the more specific signal.
+      if (skillRunning) {
+        if (noticeTitle) noticeTitle.textContent = 'Running a skill';
+        if (noticeSub)   noticeSub.textContent   = 'Input is paused until the skill finishes';
+      } else {
+        if (noticeTitle) noticeTitle.textContent = 'Agent is working';
+        if (noticeSub)   noticeSub.textContent   = 'Follow-ups are paused until the agent finishes this step';
+      }
+    }
+
+    content.classList.toggle('hidden', hide);
+    notice.classList.toggle('hidden', !hide);
+  }
+
+  function updatePlaceholder() {
+    document.getElementById('chatInput').placeholder =
+      S.activeId ? 'Send a follow-up to your agent…' : 'Describe the agent you want to build…';
+  }
+
+  function renderFrameworkSelector() {
+    const row = document.getElementById('frameworkRow');
+    if (!row) return;
+
+    // Framework is only editable when creating a new agent
+    if (S.activeId) {
+      row.classList.add('hidden');
+      return;
+    }
+    row.classList.remove('hidden');
+
+    row.querySelectorAll('.framework-option').forEach(btn => {
+      btn.classList.toggle('selected', btn.dataset.framework === S.selectedFramework);
+    });
+  }
+
+  function updateSendBtn() {
+    const input = document.getElementById('chatInput');
+    const btn   = document.getElementById('sendBtn');
+    btn.disabled = !input.value.trim();
+  }
+
+  // ===================================================================
+  //  WEBSOCKET
+  // ===================================================================
+  function wsUrl(sessionId) {
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${proto}//${window.location.host}/api/v1/sessions/${sessionId}/ws`;
+  }
+
+  function connectWebSocket(sessionId) {
+    const state = getState(sessionId);
+    if (state.ws && (state.ws.readyState === 0 || state.ws.readyState === 1)) return;
+
+    const ws = new WebSocket(wsUrl(sessionId));
+    state.ws = ws;
+
+    ws.onopen = () => {
+      state.isLive = true;
+      if (S.activeId === sessionId) renderHeader();
+    };
+
+    ws.onmessage = (ev) => {
+      try {
+        const session = JSON.parse(ev.data);
+        onSessionUpdate(sessionId, session);
+      } catch (e) {
+        console.error('ws parse:', e);
+      }
+    };
+
+    ws.onclose = () => {
+      state.ws = null;
+      state.isLive = false;
+      if (S.activeId === sessionId) renderHeader();
+    };
+
+    ws.onerror = () => {
+      state.isLive = false;
+      if (S.activeId === sessionId) renderHeader();
+    };
+  }
+
+  function onSessionUpdate(sessionId, session) {
+    const state = getState(sessionId);
+
+    // Detect newly-arrived history items so we can surface the latest
+    // tool invocation in the activity ticker. AddMessageToHistory only
+    // appends, so comparing lengths is a reliable "what's new" signal.
+    const oldLen = state.history.length;
+    state.history = session.history || [];
+
+    if (S.activeId === sessionId && state.history.length > oldLen) {
+      // If multiple tool items arrived in this single update (fast
+      // streaming sequences, or initial WS push after fetchSession),
+      // animate only the latest one. Calling showToolActivity for each
+      // in a tight loop just kills its own typewriter before any char
+      // lands. Picking the last item gives us a stable preview to type.
+      let latestTool = null;
+      for (let i = oldLen; i < state.history.length; i++) {
+        const item = state.history[i];
+        if (item && item.role === 'Tool') latestTool = item;
+      }
+      if (latestTool) {
+        showToolActivity(latestTool.content || '', latestTool.input || '');
+      }
+    }
+
+    const newStatus = normalizeStatus(session.status);
+    const statusChanged = state.status !== newStatus;
+    state.status = newStatus;
+
+    // Mirror status into S.sessions so the sidebar dot updates too
+    const sidebarSession = S.sessions.find(s => s.id === sessionId);
+    if (sidebarSession) sidebarSession.status = session.status;
+
+    if (S.activeId === sessionId) {
+      renderMessages();
+      updateInputVisibility();
+      if (statusChanged) renderHeader();
+    }
+    if (statusChanged) renderSidebar();
+  }
+
+  // ===================================================================
+  //  ACTIONS
+  // ===================================================================
+  async function loadSessions() {
+    try {
+      const r = await fetch('/api/v1/sessions');
+      S.sessions = (await r.json()) || [];
+    } catch (_) {
+      S.sessions = [];
+    }
+    S.loading = false;
+    renderSidebar();
+  }
+
+  async function fetchSession(sessionId) {
+    const state = getState(sessionId);
+    try {
+      const r = await fetch(`/api/v1/sessions/${sessionId}`);
+      if (!r.ok) return;
+      const session = await r.json();
+
+      if (state.userMessages.length === 0) {
+        state.userMessages = [session.intent || ''];
+        state.boundaries   = [0];
+      }
+      state.history     = session.history || [];
+      state.status      = normalizeStatus(session.status);
+      state.initialized = true;
+
+      // sync into sidebar entry too
+      const sidebarSession = S.sessions.find(s => s.id === sessionId);
+      if (sidebarSession) sidebarSession.status = session.status;
+
+      if (S.activeId === sessionId) {
+        renderMessages();
+        renderHeader();
+        updateInputVisibility();
+      }
+      renderSidebar();
+    } catch (e) {
+      console.error('fetchSession:', e);
+    }
+  }
+
+  function selectSession(id) {
+    if (S.activeId === id) return;
+    hideToolActivity();
+    S.activeId = id;
+
+    const state = getState(id);
+    if (!state.initialized) fetchSession(id);
+    connectWebSocket(id);
+
+    renderAll();
+    setTimeout(() => {
+      const a = document.getElementById('messagesArea');
+      a.scrollTop = a.scrollHeight;
+    }, 30);
+  }
+
+  async function createSession(intent) {
+    const framework = S.selectedFramework || DEFAULT_FRAMEWORK;
+    try {
+      const r = await fetch('/api/v1/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ intent, framework }),
+      });
+      if (!r.ok) return;
+      const session = await r.json();
+      // Server currently returns a stub without framework — seed it from the
+      // user's selection so the UI shows the right chip immediately.
+      if (!session.framework) session.framework = framework;
+      S.sessions.unshift(session);
+
+      const state = getState(session.id);
+      state.userMessages = [intent];
+      state.boundaries   = [0];
+      state.history      = [];
+      state.initialized  = true;
+
+      S.activeId = session.id;
+      connectWebSocket(session.id);
+      renderAll();
+
+      await postMessage(session.id, intent);
+
+      setTimeout(() => {
+        document.getElementById('messagesArea').scrollTop = 999999;
+      }, 40);
+    } catch (e) {
+      console.error('createSession:', e);
+    }
+  }
+
+  async function postMessage(sessionId, content) {
+    try {
+      await fetch(`/api/v1/sessions/${sessionId}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+      });
+    } catch (e) {
+      console.error('postMessage:', e);
+    }
+  }
+
+  async function sendFollowUp(sessionId, content) {
+    const state = getState(sessionId);
+    state.userMessages.push(content);
+    state.boundaries.push(state.history.length);
+    renderMessages();
+    renderHeader();
+    document.getElementById('messagesArea').scrollTop = 999999;
+
+    await postMessage(sessionId, content);
+  }
+
+  // ===================================================================
+  //  INPUT HANDLING
+  // ===================================================================
+  function submit() {
+    const input = document.getElementById('chatInput');
+    const val   = input.value.trim();
+    if (!val) return;
+    input.value = '';
+    input.style.height = 'auto';
+    updateSendBtn();
+
+    if (S.activeId) {
+      sendFollowUp(S.activeId, val);
+    } else {
+      createSession(val);
+    }
+  }
+
+  // ===================================================================
+  //  INIT
+  // ===================================================================
+  function init() {
+    initTheme();
+
+    const input = document.getElementById('chatInput');
+
+    input.addEventListener('input', () => {
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 200) + 'px';
+      updateSendBtn();
+    });
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        submit();
+      }
+    });
+
+    document.getElementById('sendBtn').addEventListener('click', submit);
+
+    document.getElementById('newBtn').addEventListener('click', () => {
+      hideToolActivity();
+      S.activeId = null;
+      renderAll();
+      input.focus();
+    });
+
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+    // Delegated handler — the download button is recreated on every
+    // renderHeader() call, but #chatHeader itself is stable.
+    document.getElementById('chatHeader').addEventListener('click', e => {
+      const btn = e.target.closest('#downloadBtn');
+      if (btn && !btn.disabled && S.activeId) {
+        downloadAgentFiles(S.activeId);
+      }
+    });
+
+    // Framework selector — pick the framework for the next created agent
+    document.getElementById('frameworkOptions').addEventListener('click', e => {
+      const btn = e.target.closest('.framework-option');
+      if (!btn) return;
+      S.selectedFramework = btn.dataset.framework;
+      renderFrameworkSelector();
+    });
+
+    renderSidebar();      // skeletons
+    renderMessages();     // welcome screen
+    renderFrameworkSelector();
+    loadSessions();
+
+    setInterval(() => renderSidebar(), 60_000);
+  }
+
+  init();
+  </script>
+</body>
+</html>
